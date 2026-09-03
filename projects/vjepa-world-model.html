@@ -11,7 +11,7 @@
   <a href="/">home</a> |
   <b>projects</b> |
   <a href="/blog">blog</a> |
-  <a href="/resume.pdf">resume</a> |
+  <a target="_blank" href="/resume.pdf">resume</a> |
   <a target="_blank" href="https://github.com/flappybird1084">github</a> |
   <a target="_blank" href="https://huggingface.co/flappybird1084">huggingface</a> |
   <a target="_blank" href="https://www.linkedin.com/in/rianbutala">linkedin</a> |
@@ -19,6 +19,8 @@
 </p>
 
 <hr>
+
+<div style="max-width: 42em; margin: 0 auto">
 
 <h1>V-JEPA world model</h1>
 
@@ -29,6 +31,8 @@
 <p>A self-supervised video world model in the V-JEPA family, hand-written from scratch in PyTorch. JEPA models learn by predicting the representation of masked parts of a video in latent space, rather than reconstructing pixels, which is what makes them powerful but also prone to representation collapse if the details are wrong.</p>
 
 <p>I trained it on the Something-Something-v2 dataset. Training was stable: no representation collapse, with the loss converging cleanly. I did not run downstream evaluation, so I am not claiming benchmark numbers. The aim was to reproduce the approach faithfully and understand why the architecture avoids collapse by building it rather than reading about it.</p>
+
+</div>
 
 <hr>
 

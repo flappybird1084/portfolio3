@@ -11,13 +11,15 @@
   <a href="/">home</a> |
   <a href="/projects">projects</a> |
   <b>blog</b> |
-  <a href="/resume.pdf">resume</a> |
+  <a target="_blank" href="/resume.pdf">resume</a> |
   <a target="_blank" href="https://github.com/flappybird1084">github</a> |
   <a target="_blank" href="https://huggingface.co/flappybird1084">huggingface</a> |
   <a target="_blank" href="https://www.linkedin.com/in/rianbutala">linkedin</a> |
   <a href="mailto:rianbutala@gmail.com">email</a>
 </p>
 <hr>
+
+<div style="max-width: 42em; margin: 0 auto">
 
 <h1>Eight months, five rewrites: building a diffusion model by hand</h1>
 
@@ -41,7 +43,7 @@
 
 <p>The fix for the second one is almost insultingly small. Inside each joint-attention block, the timestep and a <i>learned positional embedding</i> get added to the image tokens before attention:</p>
 
-<pre>
+<pre style="overflow-x: auto">
 # timestep + learned positional embeddings, added before attention
 image = image + timestep_emb
 image = image + self.image_emb(self.pos_ids)   # the line I thought I could skip
@@ -50,7 +52,7 @@ prompt = prompt + timestep_emb
 
 <p>And the attention itself is "joint": image and prompt tokens are concatenated and attend to each other in a single pass. This is also where the head-dimension bug lived. SDPA expects <code>(batch, num_heads, seq, head_dim)</code>, so the reshape has to put the heads axis <i>before</i> the sequence, not after:</p>
 
-<pre>
+<pre style="overflow-x: auto">
 Q = torch.cat([image_q, prompt_q], dim=1)   # (batch, seq, dim)
 K = torch.cat([image_k, prompt_k], dim=1)
 V = torch.cat([image_v, prompt_v], dim=1)
@@ -69,7 +71,7 @@ attn_out = F.scaled_dot_product_attention(Q, K, V)   # (batch, num_heads, seq, h
 
 <p>The denoising never touches pixels. Images are compressed with a frozen VAE into <code>(4, 32, 32)</code> latents and patchified into 256 tokens; prompts are embedded with frozen CLIP. Training is <b>rectified flow</b> (flow matching): sample a time <code>t</code>, walk a straight line between noise and data, and regress the model's velocity prediction to <code>x1 - x0</code>, all in latent space, which was the fix for that third bug.</p>
 
-<pre>
+<pre style="overflow-x: auto">
 t = torch.rand(batch, 1, 1, device=device)
 x_t = (1 - t) * x0 + t * x1            # straight line: noise -> data
 v_pred = model(x_t, prompt_emb, t)     # predict the velocity
@@ -88,6 +90,8 @@ loss = F.mse_loss(v_pred, x1 - x0)     # target v = x1 - x0, in latent space
   <li><b>Code:</b> <a target="_blank" href="https://github.com/flappybird1084/sd-v5">github.com/flappybird1084/sd-v5</a></li>
   <li><b>Live demo:</b> <a target="_blank" href="https://huggingface.co/spaces/flappybird1084/sd-v5">huggingface.co/spaces/flappybird1084/sd-v5</a></li>
 </ul>
+
+</div>
 
 <hr>
 

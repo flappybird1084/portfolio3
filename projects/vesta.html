@@ -11,7 +11,7 @@
   <a href="/">home</a> |
   <b>projects</b> |
   <a href="/blog">blog</a> |
-  <a href="/resume.pdf">resume</a> |
+  <a target="_blank" href="/resume.pdf">resume</a> |
   <a target="_blank" href="https://github.com/flappybird1084">github</a> |
   <a target="_blank" href="https://huggingface.co/flappybird1084">huggingface</a> |
   <a target="_blank" href="https://www.linkedin.com/in/rianbutala">linkedin</a> |
@@ -19,6 +19,8 @@
 </p>
 
 <hr>
+
+<div style="max-width: 42em; margin: 0 auto">
 
 <h1>Vesta, surveillance engine</h1>
 
@@ -35,6 +37,8 @@
 <h2>how analysis works</h2>
 
 <p>YOLO filters the frames that contain people, biased toward high-motion samples. Those frames are tiled into 4x4 temporal mosaics spanning the clip's timeline. Each mosaic is captioned by the vision model, and a final pass scores the clip from 0 to 100 and writes a plain-language threat assessment. The result is a recordings library you can search in plain English, like "people tampering with the water heater," and get back the clips that match.</p>
+
+</div>
 
 <hr>
 

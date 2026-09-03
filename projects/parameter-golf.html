@@ -11,7 +11,7 @@
   <a href="/">home</a> |
   <b>projects</b> |
   <a href="/blog">blog</a> |
-  <a href="/resume.pdf">resume</a> |
+  <a target="_blank" href="/resume.pdf">resume</a> |
   <a target="_blank" href="https://github.com/flappybird1084">github</a> |
   <a target="_blank" href="https://huggingface.co/flappybird1084">huggingface</a> |
   <a target="_blank" href="https://www.linkedin.com/in/rianbutala">linkedin</a> |
@@ -19,6 +19,8 @@
 </p>
 
 <hr>
+
+<div style="max-width: 42em; margin: 0 auto">
 
 <h1>OpenAI parameter golf</h1>
 
@@ -33,6 +35,8 @@
 <p>My entry reached 1.5126 bits per byte in a 600-second training window on a single A5000. Most of the work is in the compression and training tricks that let a tiny model punch above its size: aggressive low-precision quantization and quantization-aware training, parameter tying, and a tokenizer and data pipeline tuned for the budget.</p>
 
 <p>It was a great forcing function for thinking about where a model actually spends its bits, and how much of a network you can throw away before the loss notices.</p>
+
+</div>
 
 <hr>
 
