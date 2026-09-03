@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eight months, five rewrites: building a diffusion model by hand - rian butala</title>
+</head>
+<body>
+
+<p>
+  <a href="/">home</a> |
+  <a href="/projects">projects</a> |
+  <b>blog</b> |
+  <a href="/resume.pdf">resume</a> |
+  <a target="_blank" href="https://github.com/flappybird1084">github</a> |
+  <a target="_blank" href="https://huggingface.co/flappybird1084">huggingface</a> |
+  <a target="_blank" href="https://www.linkedin.com/in/rianbutala">linkedin</a> |
+  <a href="mailto:rianbutala@gmail.com">email</a>
+</p>
+<hr>
+
+<h1>Eight months, five rewrites: building a diffusion model by hand</h1>
+
+<p><i>2026-06-22</i></p>
+
+<p>A few weeks ago I put the finishing touches on one of my longest projects yet: a Qwen-Image-style MMDiT rectified-flow image generator, written by hand. I started it back in November 2025, and the whole point was to build the thing myself to actually learn how it works, not to wire together someone else's pipeline.</p>
+
+<h2>where I started (with no idea what I was doing)</h2>
+
+<p>Going in, all I really had was some limited knowledge of GANs and encoder-decoder networks. So my first attempts looked like it: huge VAEs, and CLIP latent vectors thrown straight into transformers with no understanding of patch embeddings or efficient transformer design. It did not work, and for a long time I couldn't tell you why.</p>
+
+<h2>the details that turned out to be critical</h2>
+
+<p>What actually moved the needle across <b>five full codebase rewrites and 30+ notebooks</b> wasn't any single discovery. It was the slow realization that each "minor detail" I'd waved off was actually load-bearing. A few that cost me real time:</p>
+
+<ul>
+  <li>I had the axis order for <code>scaled_dot_product_attention</code> wrong. It wants <code>(batch, num_heads, seq, head_dim)</code>, with the heads axis <i>before</i> the sequence, and I'd had this subtly off for ages.</li>
+  <li>I didn't think positional embeddings on the image tokens mattered. I assumed the network could just memorize the layout. It can't, and adding them was a turning point.</li>
+  <li>I computed the loss in image space instead of the latent space the model actually operates in.</li>
+</ul>
+
+<p>The fix for the second one is almost insultingly small. Inside each joint-attention block, the timestep and a <i>learned positional embedding</i> get added to the image tokens before attention:</p>
+
+<pre>
+# timestep + learned positional embeddings, added before attention
+image = image + timestep_emb
+image = image + self.image_emb(self.pos_ids)   # the line I thought I could skip
+prompt = prompt + timestep_emb
+</pre>
+
+<p>And the attention itself is "joint": image and prompt tokens are concatenated and attend to each other in a single pass. This is also where the head-dimension bug lived. SDPA expects <code>(batch, num_heads, seq, head_dim)</code>, so the reshape has to put the heads axis <i>before</i> the sequence, not after:</p>
+
+<pre>
+Q = torch.cat([image_q, prompt_q], dim=1)   # (batch, seq, dim)
+K = torch.cat([image_k, prompt_k], dim=1)
+V = torch.cat([image_v, prompt_v], dim=1)
+
+# SDPA wants (batch, num_heads, seq, head_dim). Land the heads axis
+# before seq via transpose. Get this wrong and it silently trains a
+# worse model instead of throwing an error.
+Q = Q.view(Q.size(0), Q.size(1), self.nhead, -1).transpose(1, 2)
+K = K.view(K.size(0), K.size(1), self.nhead, -1).transpose(1, 2)
+V = V.view(V.size(0), V.size(1), self.nhead, -1).transpose(1, 2)
+
+attn_out = F.scaled_dot_product_attention(Q, K, V)   # (batch, num_heads, seq, head_dim)
+</pre>
+
+<h2>how it actually trains</h2>
+
+<p>The denoising never touches pixels. Images are compressed with a frozen VAE into <code>(4, 32, 32)</code> latents and patchified into 256 tokens; prompts are embedded with frozen CLIP. Training is <b>rectified flow</b> (flow matching): sample a time <code>t</code>, walk a straight line between noise and data, and regress the model's velocity prediction to <code>x1 - x0</code>, all in latent space, which was the fix for that third bug.</p>
+
+<pre>
+t = torch.rand(batch, 1, 1, device=device)
+x_t = (1 - t) * x0 + t * x1            # straight line: noise -> data
+v_pred = model(x_t, prompt_emb, t)     # predict the velocity
+loss = F.mse_loss(v_pred, x1 - x0)     # target v = x1 - x0, in latent space
+</pre>
+
+<p>At inference you Euler-integrate that velocity field (with classifier-free guidance) and decode once through the VAE at the end.</p>
+
+<h2>was it an ordeal?</h2>
+
+<p>Honestly, no. It's tempting to frame eight months of rewrites as a grind, but I loved every step, especially the moments when I could <i>see</i> a fix land with my own eyes, in the loss curve or in a reverse-diffusion sample. (For full disclosure: I used Claude to turn my handwritten notebooks into clean training scripts, but the original code is all hand-written, and the notebook history is in the repo if you want to check.)</p>
+
+<p>Up next: JEPA world models.</p>
+
+<ul>
+  <li><b>Code:</b> <a target="_blank" href="https://github.com/flappybird1084/sd-v5">github.com/flappybird1084/sd-v5</a></li>
+  <li><b>Live demo:</b> <a target="_blank" href="https://huggingface.co/spaces/flappybird1084/sd-v5">huggingface.co/spaces/flappybird1084/sd-v5</a></li>
+</ul>
+
+<hr>
+
+<p><i><a href="/blog">back to the blog</a></i></p>
+
+</body>
+</html>

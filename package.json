@@ -1,0 +1,7 @@
+{
+  "name": "rianbutala-xyz",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  }
+}

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vesta, surveillance engine - rian butala</title>
+</head>
+<body>
+
+<p>
+  <a href="/">home</a> |
+  <b>projects</b> |
+  <a href="/blog">blog</a> |
+  <a href="/resume.pdf">resume</a> |
+  <a target="_blank" href="https://github.com/flappybird1084">github</a> |
+  <a target="_blank" href="https://huggingface.co/flappybird1084">huggingface</a> |
+  <a target="_blank" href="https://www.linkedin.com/in/rianbutala">linkedin</a> |
+  <a href="mailto:rianbutala@gmail.com">email</a>
+</p>
+
+<hr>
+
+<h1>Vesta, surveillance engine</h1>
+
+<p><i>Multi-camera theft detection with YOLO triggers and VLM threat scoring. Flask &middot; YOLO &middot; llama.cpp.</i></p>
+
+<p><a target="_blank" href="https://github.com/flappybird1084/vesta">source</a></p>
+
+<img src="/img/vesta.png" width="450" alt="Vesta recordings library with AI threat scores">
+
+<p>Vesta is a single-page Flask app that turns an RTSP camera, or any uploaded video, into a small local security-camera platform: live person detection, autonomous threat-triggered recording, a recordings library with AI threat scoring, and natural-language search. I built it for Stratford Preparatory to deter and detect theft across multiple cameras, and it runs entirely on local hardware with no cloud.</p>
+
+<p>YOLO does the cheap person and motion gating. When the system is armed, a person dwelling on the live feed triggers autonomous recording, and the clip is queued for analysis. A llama.cpp vision model, a Qwen-style VLM, handles the higher-level threat assessment.</p>
+
+<h2>how analysis works</h2>
+
+<p>YOLO filters the frames that contain people, biased toward high-motion samples. Those frames are tiled into 4x4 temporal mosaics spanning the clip's timeline. Each mosaic is captioned by the vision model, and a final pass scores the clip from 0 to 100 and writes a plain-language threat assessment. The result is a recordings library you can search in plain English, like "people tampering with the water heater," and get back the clips that match.</p>
+
+<hr>
+
+<p><i><a href="/projects">back to projects</a></i></p>
+
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenAI parameter golf - rian butala</title>
+</head>
+<body>
+
+<p>
+  <a href="/">home</a> |
+  <b>projects</b> |
+  <a href="/blog">blog</a> |
+  <a href="/resume.pdf">resume</a> |
+  <a target="_blank" href="https://github.com/flappybird1084">github</a> |
+  <a target="_blank" href="https://huggingface.co/flappybird1084">huggingface</a> |
+  <a target="_blank" href="https://www.linkedin.com/in/rianbutala">linkedin</a> |
+  <a href="mailto:rianbutala@gmail.com">email</a>
+</p>
+
+<hr>
+
+<h1>OpenAI parameter golf</h1>
+
+<p><i>Best language model under 16 MB: 1.5126 bits/byte in 600 seconds. PyTorch.</i></p>
+
+<p><a target="_blank" href="https://github.com/flappybird1084/parameter-golf">source</a></p>
+
+<img src="/img/golf.jpg" width="450" alt="Parameter Golf training log: 600s wallclock, int8+zlib 9.6MB artifact, sliding-window BPB ~1.51">
+
+<p>Parameter Golf is OpenAI's Model Craft Challenge: train the best language model that fits in a 16 MB artifact, evaluated by how well it compresses the FineWeb validation set, measured tokenizer-agnostically in bits per byte. It is essentially an L(N) scaling-law problem: get the lowest loss out of a fixed parameter budget, unconstrained by data or compute.</p>
+
+<p>My entry reached 1.5126 bits per byte in a 600-second training window on a single A5000. Most of the work is in the compression and training tricks that let a tiny model punch above its size: aggressive low-precision quantization and quantization-aware training, parameter tying, and a tokenizer and data pipeline tuned for the budget.</p>
+
+<p>It was a great forcing function for thinking about where a model actually spends its bits, and how much of a network you can throw away before the loss notices.</p>
+
+<hr>
+
+<p><i><a href="/projects">back to projects</a></i></p>
+
+</body>
+</html>
